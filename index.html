@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>KerimBank | Dijital Bankacılık Arayüzü</title>
   <style>
     :root {
@@ -23,11 +23,13 @@
       margin: 0;
       padding: 0;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      -webkit-tap-highlight-color: transparent;
     }
 
     body {
       background-color: var(--bg-main);
       color: var(--text-dark);
+      overflow-x: hidden;
     }
 
     .app-layout {
@@ -36,7 +38,7 @@
       min-height: 100vh;
     }
 
-    /* Sidebar */
+    /* Desktop Sidebar */
     .sidebar {
       background: var(--bg-card);
       border-right: 1px solid var(--border);
@@ -44,6 +46,9 @@
       display: flex;
       flex-direction: column;
       justify-content: space-between;
+      position: sticky;
+      top: 0;
+      height: 100vh;
     }
 
     .brand {
@@ -64,6 +69,7 @@
       justify-content: center;
       font-weight: bold;
       font-size: 1.2rem;
+      flex-shrink: 0;
     }
 
     .menu {
@@ -79,7 +85,9 @@
       border-radius: 10px;
       font-weight: 500;
       transition: 0.2s;
-      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
 
     .menu a:hover, .menu a.active {
@@ -87,10 +95,21 @@
       color: var(--primary);
     }
 
+    /* Mobile Top Header (Hidden on Desktop) */
+    .mobile-header {
+      display: none;
+    }
+
+    /* Mobile Bottom Navigation (Hidden on Desktop) */
+    .mobile-bottom-nav {
+      display: none;
+    }
+
     /* Main Content */
     .main-content {
       padding: 2rem 3rem;
       max-width: 1200px;
+      width: 100%;
     }
 
     .topbar {
@@ -98,26 +117,13 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 2rem;
+      gap: 1rem;
     }
 
     .subtitle {
       color: var(--text-muted);
       font-size: 0.95rem;
       margin-top: 4px;
-    }
-
-    .view-section {
-      display: none;
-    }
-
-    .view-section.active {
-      display: block;
-      animation: fadeIn 0.25s ease;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(4px); }
-      to { opacity: 1; transform: translateY(0); }
     }
 
     .dashboard-grid {
@@ -127,16 +133,16 @@
       margin-bottom: 2rem;
     }
 
-    .cards-grid-3 {
+    .two-col-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(2, 1fr);
       gap: 1.5rem;
       margin-bottom: 2rem;
     }
 
-    .cards-grid-2 {
+    .three-col-grid {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(3, 1fr);
       gap: 1.5rem;
       margin-bottom: 2rem;
     }
@@ -148,22 +154,10 @@
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
     }
 
-    .card-label {
-      font-size: 0.85rem;
-      color: var(--text-muted);
-      font-weight: 500;
-    }
-
     .balance-amount {
       font-size: 2.5rem;
       margin: 0.75rem 0 1.25rem;
       letter-spacing: -1px;
-    }
-
-    .sub-amount {
-      font-size: 1.75rem;
-      margin: 0.5rem 0 1rem;
-      letter-spacing: -0.5px;
     }
 
     .iban-box {
@@ -171,10 +165,17 @@
       align-items: center;
       justify-content: space-between;
       background: var(--bg-main);
-      padding: 0.6rem 1rem;
+      padding: 0.65rem 1rem;
       border-radius: 10px;
       font-size: 0.85rem;
       color: var(--text-muted);
+      gap: 8px;
+    }
+
+    #ibanText {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     /* Sanal Kart */
@@ -187,7 +188,7 @@
       min-height: 200px;
     }
 
-    .virtual-card.blue-grad {
+    .virtual-card.blue-card {
       background: linear-gradient(135deg, #2563eb, #1e40af);
     }
 
@@ -203,8 +204,8 @@
       margin: 1.5rem 0;
     }
 
-    /* İşlemler & Tablolar */
-    .section-box {
+    /* İşlemler & Listeler */
+    .section-card {
       background: var(--bg-card);
       padding: 1.75rem;
       border-radius: var(--radius);
@@ -217,14 +218,16 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 1.5rem;
+      gap: 1rem;
+      flex-wrap: wrap;
     }
 
-    input[type="text"], input[type="number"] {
-      padding: 0.65rem 1rem;
+    input {
+      padding: 0.7rem 1rem;
       border: 1px solid var(--border);
       border-radius: 10px;
       outline: none;
-      font-size: 0.9rem;
+      font-size: 0.95rem;
     }
 
     input:focus {
@@ -244,6 +247,7 @@
       align-items: center;
       padding-bottom: 1rem;
       border-bottom: 1px solid var(--border);
+      gap: 1rem;
     }
 
     .tx-item:last-child {
@@ -257,77 +261,73 @@
       margin-top: 2px;
     }
 
-    .amount-plus { color: var(--success); font-weight: 600; }
-    .amount-minus { color: var(--text-dark); font-weight: 600; }
+    .amount-plus { color: var(--success); font-weight: 600; white-space: nowrap; }
+    .amount-minus { color: var(--text-dark); font-weight: 600; white-space: nowrap; }
 
-    /* Switch Toggle (Kart Ayarları) */
-    .setting-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 1rem 0;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .setting-row:last-child { border-bottom: none; }
-
-    .toggle {
-      position: relative;
-      display: inline-block;
-      width: 44px;
-      height: 24px;
-    }
-
-    .toggle input { opacity: 0; width: 0; height: 0; }
-
-    .slider {
-      position: absolute;
-      cursor: pointer;
-      inset: 0;
-      background-color: #cbd5e1;
-      transition: .3s;
-      border-radius: 24px;
-    }
-
-    .slider:before {
-      position: absolute;
-      content: "";
-      height: 18px;
-      width: 18px;
-      left: 3px;
-      bottom: 3px;
-      background-color: white;
-      transition: .3s;
-      border-radius: 50%;
-    }
-
-    input:checked + .slider { background-color: var(--primary); }
-    input:checked + .slider:before { transform: translateX(20px); }
-
-    /* Yatırım Barları */
-    .progress-bg {
-      width: 100%;
-      height: 8px;
-      background: var(--bg-main);
-      border-radius: 8px;
-      margin-top: 8px;
-      overflow: hidden;
-    }
-
-    .progress-fill {
-      height: 100%;
-      border-radius: 8px;
-    }
-
+    /* Progress Bar & Badges */
     .badge {
+      display: inline-block;
       padding: 4px 10px;
       border-radius: 20px;
       font-size: 0.75rem;
       font-weight: 600;
+      background: #eff6ff;
+      color: var(--primary);
     }
 
-    .badge-green { background: #dcfce7; color: #166534; }
-    .badge-blue { background: #dbeafe; color: #1e40af; }
+    .badge.green { background: #ecfdf5; color: var(--success); }
+
+    .progress-bg {
+      width: 100%;
+      height: 8px;
+      background: var(--bg-main);
+      border-radius: 99px;
+      overflow: hidden;
+      margin: 0.75rem 0;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--primary);
+      border-radius: 99px;
+    }
+
+    /* Switch Toggle */
+    .switch-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.9rem 0;
+      border-bottom: 1px solid var(--border);
+      gap: 1rem;
+    }
+
+    .switch-row:last-child { border-bottom: none; }
+
+    .toggle-btn {
+      width: 48px;
+      height: 26px;
+      background: #cbd5e1;
+      border-radius: 99px;
+      position: relative;
+      transition: 0.25s;
+      flex-shrink: 0;
+    }
+
+    .toggle-btn::after {
+      content: "";
+      width: 20px;
+      height: 20px;
+      background: white;
+      border-radius: 50%;
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      transition: 0.25s;
+    }
+
+    .toggle-btn.on { background: var(--primary); }
+    .toggle-btn.on::after { left: 25px; }
 
     /* Butonlar & Modal */
     button {
@@ -341,7 +341,9 @@
     .btn-primary {
       background: var(--primary);
       color: white;
-      padding: 0.75rem 1.25rem;
+      padding: 0.8rem 1.25rem;
+      font-size: 0.9rem;
+      white-space: nowrap;
     }
 
     .btn-primary:hover { background: var(--primary-hover); }
@@ -351,6 +353,7 @@
       border: 1px solid var(--border);
       color: var(--text-dark);
       padding: 0.65rem 1rem;
+      width: 100%;
     }
 
     .btn-outline:hover { background: var(--bg-main); }
@@ -358,17 +361,18 @@
     .btn-copy {
       background: white;
       color: var(--primary);
-      padding: 4px 10px;
+      padding: 6px 12px;
       font-size: 0.8rem;
       border: 1px solid var(--border);
+      flex-shrink: 0;
     }
 
     .modal {
       margin: auto;
       border: none;
       border-radius: var(--radius);
-      padding: 2rem;
-      width: 100%;
+      padding: 1.75rem;
+      width: calc(100% - 2rem);
       max-width: 400px;
       box-shadow: 0 20px 40px rgba(0,0,0,0.15);
     }
@@ -392,33 +396,177 @@
       margin-top: 1.5rem;
     }
 
-    @media (max-width: 900px) {
-      .app-layout { grid-template-columns: 1fr; }
-      .sidebar { display: none; }
-      .dashboard-grid, .cards-grid-3, .cards-grid-2 { grid-template-columns: 1fr; }
+    .modal-actions .btn-outline {
+      width: auto;
+    }
+
+    /* Tab Panelleri */
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; animation: fadeIn 0.25s ease; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Mobil Uyumluluk (Responsive) */
+    @media (max-width: 768px) {
+      .app-layout {
+        grid-template-columns: 1fr;
+        padding-bottom: 84px; /* Alt menü boşluğu */
+      }
+
+      .sidebar {
+        display: none;
+      }
+
+      /* Mobil Üst Bar */
+      .mobile-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: var(--bg-card);
+        padding: 0.9rem 1.25rem;
+        border-bottom: 1px solid var(--border);
+        position: sticky;
+        top: 0;
+        z-index: 40;
+      }
+
+      .mobile-brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .mobile-brand h2 {
+        font-size: 1.15rem;
+      }
+
+      .btn-reset-sm {
+        background: var(--bg-main);
+        color: var(--text-muted);
+        border: 1px solid var(--border);
+        padding: 0.45rem 0.8rem;
+        font-size: 0.8rem;
+        border-radius: 8px;
+      }
+
+      .main-content {
+        padding: 1.25rem;
+      }
+
+      .topbar {
+        flex-direction: column;
+        align-items: flex-start;
+        margin-bottom: 1.25rem;
+      }
+
+      .topbar h1 {
+        font-size: 1.4rem;
+      }
+
+      .topbar .btn-primary {
+        width: 100%;
+        text-align: center;
+        padding: 0.85rem;
+      }
+
+      .dashboard-grid, .two-col-grid, .three-col-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+        margin-bottom: 1.25rem;
+      }
+
+      .card, .section-card {
+        padding: 1.25rem;
+      }
+
+      .balance-amount {
+        font-size: 2rem;
+      }
+
+      .vc-number {
+        font-size: 1.15rem;
+        margin: 1.25rem 0;
+      }
+
+      .section-header input {
+        width: 100%;
+      }
+
+      /* Mobil Sabit Alt Menü */
+      .mobile-bottom-nav {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: var(--bg-card);
+        border-top: 1px solid var(--border);
+        padding: 0.5rem 0.25rem calc(0.5rem + env(safe-area-inset-bottom));
+        z-index: 50;
+        box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.04);
+      }
+
+      .mobile-bottom-nav a {
+        text-decoration: none;
+        color: var(--text-muted);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        font-size: 0.72rem;
+        font-weight: 600;
+        padding: 0.35rem 0;
+        border-radius: 8px;
+      }
+
+      .mobile-bottom-nav a svg {
+        width: 20px;
+        height: 20px;
+        stroke: currentColor;
+        fill: none;
+        stroke-width: 2;
+      }
+
+      .mobile-bottom-nav a.active {
+        color: var(--primary);
+      }
     }
   </style>
 </head>
 <body>
   <div class="app-layout">
-    <!-- Yan Menü -->
+    <!-- Masaüstü Yan Menü -->
     <aside class="sidebar">
       <div>
         <div class="brand">
           <div class="logo-box">K</div>
           <h2>KerimBank</h2>
         </div>
-        <nav class="menu" id="sidebarMenu">
-          <a data-target="overview" class="active">Genel Bakış</a>
-          <a data-target="accounts">Hesaplarım</a>
-          <a data-target="cards">Kartlarım</a>
-          <a data-target="investments">Yatırımlar</a>
+        <nav class="menu" id="desktopNav">
+          <a href="#" data-tab="overview" class="active">Genel Bakış</a>
+          <a href="#" data-tab="accounts">Hesaplarım</a>
+          <a href="#" data-tab="cards">Kartlarım</a>
+          <a href="#" data-tab="investments">Yatırımlar</a>
         </nav>
       </div>
       <div class="sidebar-footer">
-        <button id="resetBtn" class="btn-outline" style="width: 100%;">Verileri Sıfırla</button>
+        <button id="resetBtnDesktop" class="btn-outline">Verileri Sıfırla</button>
       </div>
     </aside>
+
+    <!-- Mobil Üst Başlık -->
+    <header class="mobile-header">
+      <div class="mobile-brand">
+        <div class="logo-box">K</div>
+        <h2>KerimBank</h2>
+      </div>
+      <button id="resetBtnMobile" class="btn-reset-sm">Sıfırla</button>
+    </header>
 
     <!-- Ana İçerik -->
     <main class="main-content">
@@ -431,7 +579,7 @@
       </header>
 
       <!-- 1. SEKME: GENEL BAKIŞ -->
-      <div id="view-overview" class="view-section active">
+      <div id="tab-overview" class="tab-panel active">
         <section class="dashboard-grid">
           <article class="card balance-card">
             <span class="card-label">Toplam Kullanılabilir Bakiye</span>
@@ -461,7 +609,7 @@
           </article>
         </section>
 
-        <section class="section-box">
+        <section class="section-card">
           <div class="section-header">
             <h3>Son Hesap Hareketleri</h3>
             <input type="text" id="searchInput" placeholder="İşlem veya kişi ara...">
@@ -471,190 +619,184 @@
       </div>
 
       <!-- 2. SEKME: HESAPLARIM -->
-      <div id="view-accounts" class="view-section">
-        <div class="cards-grid-3">
+      <div id="tab-accounts" class="tab-panel">
+        <section class="three-col-grid">
           <article class="card">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-              <span class="card-label">Vadesiz TL Hesabı</span>
-              <span class="badge badge-blue">Ana Hesap</span>
-            </div>
-            <h3 id="accTlBalance" class="sub-amount">₺73.709,50</h3>
+            <span class="badge">Vadesiz TL</span>
+            <h3 style="margin-top: 0.75rem;">Ana Maaş Hesabı</h3>
+            <h2 id="accTlBalance" style="margin: 0.75rem 0; font-size: 1.75rem;">₺73.709,50</h2>
             <p class="tx-date">TR45 0006 2000 1234 5678 9012 34</p>
           </article>
 
           <article class="card">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-              <span class="card-label">Vadesiz USD Hesabı</span>
-              <span class="badge badge-green">Döviz</span>
-            </div>
-            <h3 class="sub-amount">$4.250,00</h3>
+            <span class="badge green">Vadesiz USD</span>
+            <h3 style="margin-top: 0.75rem;">Döviz Birikim Hesabı</h3>
+            <h2 style="margin: 0.75rem 0; font-size: 1.75rem;">$4.250,00</h2>
             <p class="tx-date">TR88 0006 2000 9876 5432 1098 76</p>
           </article>
 
           <article class="card">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-              <span class="card-label">Günlük Vadeli Birikim</span>
-              <span class="badge badge-green">%46,5 Faiz</span>
-            </div>
-            <h3 class="sub-amount">₺120.000,00</h3>
-            <p class="tx-date">Günlük Getiri: +₺142,80</p>
+            <span class="badge">Günlük Vadeli</span>
+            <h3 style="margin-top: 0.75rem;">Kerim Kumbara</h3>
+            <h2 style="margin: 0.75rem 0; font-size: 1.75rem;">₺28.400,00</h2>
+            <p class="tx-date">Yıllık %44,50 Hoş Geldin Faizi</p>
           </article>
-        </div>
+        </section>
 
-        <section class="section-box">
-          <div class="section-header">
-            <h3>Hesap Limitleri ve Tanımlı Talimatlar</h3>
+        <section class="section-card">
+          <h3 style="margin-bottom: 1rem;">Günlük İşlem Limitleri</h3>
+          <div style="margin-bottom: 1.25rem;">
+            <div style="display:flex; justify-content:space-between; font-size:0.9rem;">
+              <span>FAST / Havale Limiti</span>
+              <strong>₺15.000 / ₺100.000</strong>
+            </div>
+            <div class="progress-bg"><div class="progress-fill" style="width: 15%;"></div></div>
           </div>
-          <ul class="transaction-list">
-            <li class="tx-item">
-              <div>
-                <strong>Günlük FAST / EFT Transfer Limiti</strong>
-                <div class="tx-date">Kalan Günlük Limit: ₺245.000,00</div>
-              </div>
-              <span><strong>₺250.000,00</strong></span>
-            </li>
-            <li class="tx-item">
-              <div>
-                <strong>QR Kod ile ATM Para Çekme Limiti</strong>
-                <div class="tx-date">Ücretsiz Çekim Hakkı Aktif</div>
-              </div>
-              <span><strong>₺20.000,00</strong></span>
-            </li>
-            <li class="tx-item">
-              <div>
-                <strong>Otomatik Fatura Ödeme Talimatı (Elektrik & İnternet)</strong>
-                <div class="tx-date">Sonraki Ödeme: 28 Kasım 2026</div>
-              </div>
-              <span class="badge badge-green">Aktif</span>
-            </li>
-          </ul>
+          <div>
+            <div style="display:flex; justify-content:space-between; font-size:0.9rem;">
+              <span>ATM Nakit Çekim Limiti</span>
+              <strong>₺2.500 / ₺10.000</strong>
+            </div>
+            <div class="progress-bg"><div class="progress-fill" style="width: 25%;"></div></div>
+          </div>
         </section>
       </div>
 
       <!-- 3. SEKME: KARTLARIM -->
-      <div id="view-cards" class="view-section">
-        <div class="cards-grid-2">
+      <div id="tab-cards" class="tab-panel">
+        <section class="two-col-grid">
           <article class="card virtual-card">
             <div class="vc-top">
               <span>Kerim Platinum Kredi Kartı</span>
-              <span>TEMASSIZ</span>
+              <span>AKTİF</span>
             </div>
-            <div class="vc-number">4532 •••• •••• 8841</div>
+            <div class="vc-number">4532 7190 3312 8841</div>
             <div class="vc-bottom">
               <div>
                 <small>GÜNCEL BORÇ</small>
-                <p>₺14.820,00</p>
+                <p>₺8.420,00</p>
               </div>
               <div>
                 <small>KULLANILABİLİR LİMİT</small>
-                <p>₺85.180,00</p>
+                <p>₺71.580,00</p>
               </div>
             </div>
           </article>
 
-          <article class="card virtual-card blue-grad">
+          <article class="card virtual-card blue-card">
             <div class="vc-top">
               <span>Kerim Sanal Kart</span>
-              <span>E-TİCARET</span>
+              <span>İNTERNET ÖZEL</span>
             </div>
-            <div class="vc-number">5412 •••• •••• 3019</div>
+            <div class="vc-number">5401 8820 1104 3920</div>
             <div class="vc-bottom">
               <div>
-                <small>AYLIK SANAL LİMİT</small>
-                <p>₺10.000,00</p>
+                <small>AYLIK LİMİT</small>
+                <p>₺5.000,00</p>
               </div>
               <div>
-                <small>DURUM</small>
-                <p>AKTİF</p>
+                <small>CVV</small>
+                <p>842</p>
               </div>
             </div>
           </article>
-        </div>
+        </section>
 
-        <section class="section-box">
-          <div class="section-header">
-            <h3>Kart Güvenlik ve Kullanım Ayarları</h3>
-          </div>
-          <div class="setting-row">
+        <section class="section-card">
+          <h3 style="margin-bottom: 0.75rem;">Kart Güvenlik ve Kullanım Ayarları</h3>
+          <div class="switch-row">
             <div>
               <strong>İnternet Alışverişleri</strong>
-              <div class="tx-date">3D Secure ve online abonelik ödemelerine izin ver</div>
+              <p class="tx-date">E-ticaret ve online abonelik ödemelerine izin ver</p>
             </div>
-            <label class="toggle">
-              <input type="checkbox" checked>
-              <span class="slider"></span>
-            </label>
+            <button type="button" class="toggle-btn on" aria-label="İnternet Alışverişleri"></button>
           </div>
-          <div class="setting-row">
+          <div class="switch-row">
             <div>
               <strong>Temassız Ödeme</strong>
-              <div class="tx-date">Şifresiz temassız işlem limiti: ₺1.500</div>
+              <p class="tx-date">POS cihazlarında şifresiz hızlı ödeme</p>
             </div>
-            <label class="toggle">
-              <input type="checkbox" checked>
-              <span class="slider"></span>
-            </label>
+            <button type="button" class="toggle-btn on" aria-label="Temassız Ödeme"></button>
           </div>
-          <div class="setting-row">
+          <div class="switch-row">
             <div>
               <strong>Yurt Dışı Kullanımı</strong>
-              <div class="tx-date">Yurt dışı POS ve döviz bazlı işlemler</div>
+              <p class="tx-date">Yabancı para birimi cinsinden harcamalar</p>
             </div>
-            <label class="toggle">
-              <input type="checkbox">
-              <span class="slider"></span>
-            </label>
+            <button type="button" class="toggle-btn" aria-label="Yurt Dışı Kullanımı"></button>
           </div>
         </section>
       </div>
 
       <!-- 4. SEKME: YATIRIMLAR -->
-      <div id="view-investments" class="view-section">
-        <div class="cards-grid-3">
+      <div id="tab-investments" class="tab-panel">
+        <section class="two-col-grid">
           <article class="card">
-            <span class="card-label">Toplam Portföy Değeri</span>
-            <h3 class="sub-amount">₺348.500,00</h3>
-            <span class="badge badge-green">▲ +%18,4 (Son 30 Gün)</span>
+            <span class="card-label">Toplam Yatırım Portföyü</span>
+            <h2 style="font-size: 2.2rem; margin: 0.6rem 0;">₺142.850,00</h2>
+            <span class="badge green">+%14,8 Aylık Getiri (+₺18.410)</span>
           </article>
-          <article class="card">
-            <span class="card-label">24 Ayar Gram Altın</span>
-            <h3 class="sub-amount">42,50 gr</h3>
-            <p class="tx-date">Güncel Değer: ₺134.300,00</p>
-          </article>
-          <article class="card">
-            <span class="card-label">Teknoloji Hisse Fonu</span>
-            <h3 class="sub-amount">1.450 Pay</h3>
-            <p class="tx-date">Güncel Değer: ₺214.200,00</p>
-          </article>
-        </div>
 
-        <section class="section-box">
-          <div class="section-header">
-            <h3>Varlık Dağılımı</h3>
-          </div>
+          <article class="card">
+            <h4 style="margin-bottom: 1rem;">Varlık Dağılımı</h4>
+            <div style="margin-bottom: 0.75rem;">
+              <div style="display:flex; justify-content:space-between; font-size:0.85rem;">
+                <span>Hisse Senedi Fonu (%55)</span>
+                <strong>₺78.567,50</strong>
+              </div>
+              <div class="progress-bg"><div class="progress-fill" style="width: 55%;"></div></div>
+            </div>
+            <div>
+              <div style="display:flex; justify-content:space-between; font-size:0.85rem;">
+                <span>24 Ayar Gram Altın (%45)</span>
+                <strong>₺64.282,50</strong>
+              </div>
+              <div class="progress-bg"><div class="progress-fill" style="width: 45%; background: #f59e0b;"></div></div>
+            </div>
+          </article>
+        </section>
+
+        <section class="section-card">
+          <h3 style="margin-bottom: 1rem;">Portföyümdeki Varlıklar</h3>
           <ul class="transaction-list">
-            <li class="tx-item" style="display:block;">
-              <div style="display:flex; justify-content:space-between;">
-                <strong>Yatırım Fonları (%61)</strong>
-                <span>₺214.200,00</span>
+            <li class="tx-item">
+              <div>
+                <strong>KRM - Teknoloji Hisse Senedi Fonu</strong>
+                <div class="tx-date">12.500 Adet • Birim Fiyat: ₺6,28</div>
               </div>
-              <div class="progress-bg">
-                <div class="progress-fill" style="width:61%; background:var(--primary);"></div>
-              </div>
+              <span class="amount-plus">+%18,4 (₺78.567,50)</span>
             </li>
-            <li class="tx-item" style="display:block;">
-              <div style="display:flex; justify-content:space-between;">
-                <strong>Kıymetli Madenler / Altın (%39)</strong>
-                <span>₺134.300,00</span>
+            <li class="tx-item">
+              <div>
+                <strong>XAU - Kerim Altın Hesabı</strong>
+                <div class="tx-date">21,15 Gram • Gram Fiyat: ₺3.039,36</div>
               </div>
-              <div class="progress-bg">
-                <div class="progress-fill" style="width:39%; background:#f59e0b;"></div>
-              </div>
+              <span class="amount-plus">+%10,2 (₺64.282,50)</span>
             </li>
           </ul>
         </section>
       </div>
     </main>
+
+    <!-- Mobil Sabit Alt Menü -->
+    <nav class="mobile-bottom-nav" id="mobileNav">
+      <a href="#" data-tab="overview" class="active">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+        <span>Özet</span>
+      </a>
+      <a href="#" data-tab="accounts">
+        <svg viewBox="0 0 24 24"><path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3"/></svg>
+        <span>Hesaplar</span>
+      </a>
+      <a href="#" data-tab="cards">
+        <svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+        <span>Kartlar</span>
+      </a>
+      <a href="#" data-tab="investments">
+        <svg viewBox="0 0 24 24"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+        <span>Yatırım</span>
+      </a>
+    </nav>
   </div>
 
   <!-- HTML5 Native Dialog (Para Transferi Penceresi) -->
@@ -694,32 +836,44 @@
     const searchInput = document.getElementById("searchInput");
     const transferDialog = document.getElementById("transferDialog");
     const transferForm = document.getElementById("transferForm");
+    const pageTitle = document.getElementById("pageTitle");
+    const pageSubtitle = document.getElementById("pageSubtitle");
 
     // Sekme Başlıkları
-    const viewTitles = {
-      overview: { title: "Hoş Geldin, Ahmet", sub: "Finansal özetin ve son hesap hareketlerin" },
-      accounts: { title: "Hesaplarım", sub: "Vadesiz, döviz ve günlük vadeli hesap detayların" },
-      cards: { title: "Kartlarım", sub: "Kredi kartı, sanal kart ve güvenlik tercihlerin" },
-      investments: { title: "Yatırımlar", sub: "Altın, fon ve varlık dağılımı portföyün" }
+    const tabMeta = {
+      overview: { title: "Hoş Geldin, Ahmet", subtitle: "Finansal özetin ve son hesap hareketlerin" },
+      accounts: { title: "Hesaplarım", subtitle: "Vadesiz, döviz ve vadeli birikim hesapların" },
+      cards: { title: "Kartlarım", subtitle: "Fiziksel ve sanal kart limitlerin ile güvenlik ayarların" },
+      investments: { title: "Yatırımlarım", subtitle: "Canlı portföy dağılımın ve fon getirilerin" }
     };
 
-    // Sol Menü Sekme Geçişleri
-    document.querySelectorAll("#sidebarMenu a").forEach(link => {
+    // Hem Masaüstü Hem Mobil Menü Geçişleri
+    const navLinks = document.querySelectorAll("[data-tab]");
+    const tabPanels = document.querySelectorAll(".tab-panel");
+
+    navLinks.forEach(link => {
       link.addEventListener("click", (e) => {
         e.preventDefault();
-        const target = link.dataset.target;
+        const target = link.dataset.tab;
 
-        // Aktif menü sınıfını güncelle
-        document.querySelectorAll("#sidebarMenu a").forEach(a => a.classList.remove("active"));
-        link.classList.add("active");
+        navLinks.forEach(item => {
+          item.classList.toggle("active", item.dataset.tab === target);
+        });
 
-        // Görünümü değiştir
-        document.querySelectorAll(".view-section").forEach(sec => sec.classList.remove("active"));
-        document.getElementById(`view-${target}`).classList.add("active");
+        tabPanels.forEach(panel => {
+          panel.classList.toggle("active", panel.id === `tab-${target}`);
+        });
 
-        // Üst başlığı güncelle
-        document.getElementById("pageTitle").textContent = viewTitles[target].title;
-        document.getElementById("pageSubtitle").textContent = viewTitles[target].sub;
+        pageTitle.textContent = tabMeta[target].title;
+        pageSubtitle.textContent = tabMeta[target].subtitle;
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      });
+    });
+
+    // Kart Ayarları Toggle Butonları
+    document.querySelectorAll(".toggle-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        btn.classList.toggle("on");
       });
     });
 
@@ -754,11 +908,15 @@
       localStorage.setItem("kerimbank_tx", JSON.stringify(transactions));
     };
 
-    // Modal Aç / Kapat
-    document.getElementById("openTransferModal").addEventListener("click", () => transferDialog.showModal());
-    document.getElementById("closeModalBtn").addEventListener("click", () => transferDialog.close());
+    // Olay Dinleyicileri
+    document.getElementById("openTransferModal").addEventListener("click", () => {
+      transferDialog.showModal();
+    });
 
-    // Para Transferi Gönderimi
+    document.getElementById("closeModalBtn").addEventListener("click", () => {
+      transferDialog.close();
+    });
+
     transferForm.addEventListener("submit", (e) => {
       e.preventDefault();
       const recipient = document.getElementById("recipient").value.trim();
@@ -779,10 +937,10 @@
       }
     });
 
-    // Canlı Arama
-    searchInput.addEventListener("input", (e) => renderApp(e.target.value));
+    searchInput.addEventListener("input", (e) => {
+      renderApp(e.target.value);
+    });
 
-    // Panoya IBAN Kopyalama
     document.getElementById("copyIbanBtn").addEventListener("click", async (e) => {
       const iban = document.getElementById("ibanText").textContent;
       await navigator.clipboard.writeText(iban);
@@ -790,12 +948,14 @@
       setTimeout(() => e.target.textContent = "Kopyala", 2000);
     });
 
-    // Verileri Sıfırlama
-    document.getElementById("resetBtn").addEventListener("click", () => {
+    const resetData = () => {
       localStorage.removeItem("kerimbank_tx");
       transactions = [...defaultTransactions];
       renderApp();
-    });
+    };
+
+    document.getElementById("resetBtnDesktop").addEventListener("click", resetData);
+    document.getElementById("resetBtnMobile").addEventListener("click", resetData);
 
     // Başlat
     renderApp();
